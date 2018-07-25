@@ -31,9 +31,9 @@ export default {
   },
 
   jumpToSyntaxError() {
-    if (errorLineNum !== null) {
+    if (this.errorLineNum !== null) {
       const editor = atom.workspace.getActiveTextEditor();
-      this.gotoLine(editor, errorLineNum );
+      this.gotoLine(editor, this.errorLineNum);
     }
   },
 
@@ -74,16 +74,16 @@ export default {
   },
 
   gotoLine(editor, lineNum) {
-    editor.getSelections()[0].cursor.setScreenPosition({row: lineNum - 1, column: 0});
+    editor.getSelections()[0].cursor.setScreenPosition({ row: lineNum - 1, column: 0 });
     editor.scrollToCursorPosition();
   },
 
   format(editor) {
     try {
       // Reset the error tracker.
-      errorLineNum = null;
+      this.errorLineNum = null;
       const binary = atom.config.get('elm-format.binary');
-      const elmVersion = atom.config.get('elm-format.elmVersion') || "0.19";
+      const elmVersion = atom.config.get('elm-format.elmVersion') || '0.19';
 
       const { status, stdout, stderr } = childProcess.spawnSync(
         binary,
@@ -97,44 +97,46 @@ export default {
           this.success('File Formatted');
           break;
         }
-        case 1:
+        case 1: {
           // Remove term colors
           const errorText = stderr.toString()
-            .replace(/\[\d{1,2}m/g, "")
-            .replace(/[\s\S]*I ran into something unexpected when parsing your code!/i, "");
+            .replace(/\[\d{1,2}m/g, '')
+            .replace(/[\s\S]*\x1bI ran into something unexpected when parsing your code!/i, ''); // eslint-disable-line no-control-regex
 
-          const matches = errorText.match(/(\d+)│\s/)
-          let options = {};
+          const matches = errorText.match(/(\d+)│\s/);
+          const options = {};
 
           if (matches && matches.length > 1) {
-            errorLineNum = parseInt(matches[1], 10);
+            this.errorLineNum = parseInt(matches[1], 10);
             const shouldAutoJump = atom.config.get('elm-format.autoJumpToSyntaxError');
 
             if (shouldAutoJump) {
-              this.gotoLine(editor, errorLineNum );
-            }
-            else {
+              this.gotoLine(editor, this.errorLineNum);
+            } else {
               options.buttons = [{
                 className: 'btn btn-error',
                 onDidClick: () => {
-                  this.gotoLine(editor, errorLineNum)
+                  this.gotoLine(editor, this.errorLineNum);
                 },
                 text: 'Jump to Syntax Error',
               }];
             }
           }
 
-          this.error('Elm Format Failed\n\n' + errorText, options);
+          this.error(`Elm Format Failed\n\n${errorText}`, options);
           break;
-        case null:
+        }
+        case null: {
           if (fs.existsSync(binary)) {
             this.error('Can\'t execute the elm-format binary, is it executable?', installInstructions);
           } else {
             this.error('Can\'t find the elm-format binary, check the "elm-format" package settings page', installInstructions);
           }
           break;
-        default:
+        }
+        default: {
           this.error(`elm-format exited with code ${status}.`);
+        }
       }
     } catch (exception) {
       this.error(`elm-format exception: ${exception}`);

@@ -13,7 +13,7 @@ export default {
     description: 'The version of Elm to use when formatting.',
     type: 'string',
     default: '0.19',
-    enum: ['0.18', '0.19']
+    enum: ['0.18', '0.19'],
   },
   formatOnSave: {
     title: 'Format on save',
@@ -41,6 +41,6 @@ export default {
     description: 'If a syntax error is encountered, automatically focus the cursor on the line with the error.',
     type: 'boolean',
     default: true,
-    order: 2
-  }
+    order: 2,
+  },
 };
