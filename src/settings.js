@@ -6,6 +6,13 @@ export default {
     description: 'Path for elm-format',
     type: 'string',
     default: 'elm-format',
+    order: 7,
+  },
+  preferLocalBinary: {
+    title: 'Prefer local binary',
+    description: 'Try to resolve the binary from the current project\'s directories if possible',
+    type: 'boolean',
+    default: false,
     order: 6,
   },
   elmVersion: {

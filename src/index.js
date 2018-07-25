@@ -5,7 +5,7 @@ import path from 'path';
 import childProcess from 'child_process';
 import fs from 'fs';
 import config from './settings';
-import { installInstructions } from './helpers';
+import { installInstructions, resolveLocalBinary } from './helpers';
 
 export default {
   config,
@@ -82,12 +82,27 @@ export default {
     try {
       // Reset the error tracker.
       this.errorLineNum = null;
-      const binary = atom.config.get('elm-format.binary');
-      const elmVersion = atom.config.get('elm-format.elmVersion') || '0.19';
+      let binary = atom.config.get('elm-format.binary');
+      let elmVersion = atom.config.get('elm-format.elmVersion') || '0.19';
+
+      if (atom.config.get('elm-format.preferLocalBinary')) {
+        const localBinary = resolveLocalBinary();
+
+        if (localBinary) {
+          binary = localBinary;
+          elmVersion = false;
+        }
+      }
+
+      const args = ['--stdin'];
+
+      if (elmVersion) {
+        args.push('--elm-version', elmVersion);
+      }
 
       const { status, stdout, stderr } = childProcess.spawnSync(
         binary,
-        ['--elm-version', elmVersion, '--stdin'], { input: editor.getText() });
+        args, { input: editor.getText() });
 
       switch (status) {
         case 0: {
