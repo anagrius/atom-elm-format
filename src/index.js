@@ -86,11 +86,11 @@ export default {
       let elmVersion = atom.config.get('elm-format.elmVersion') || '0.19';
 
       if (atom.config.get('elm-format.preferLocalBinary')) {
-        const localBinary = resolveLocalBinary();
+        const { localBinary, localElmVersion } = resolveLocalBinary();
 
-        if (localBinary) {
+        if (localBinary && localElmVersion) {
           binary = localBinary;
-          elmVersion = false;
+          elmVersion = localElmVersion;
         }
       }
 
